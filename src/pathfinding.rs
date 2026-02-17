@@ -6,14 +6,14 @@ use std::collections::{BinaryHeap, VecDeque};
 pub enum PathfindingAlgorithm {
     DepthFirst,
     BreadthFirst,
-    Djikstra,
+    Dijkstra,
 }
 
 pub fn solve_graph<T>(graph: &Graph<T>, algo: &PathfindingAlgorithm) -> Option<Vec<usize>> {
     match algo {
         PathfindingAlgorithm::DepthFirst => dfs_iterative(graph),
         PathfindingAlgorithm::BreadthFirst => bfs(graph),
-        PathfindingAlgorithm::Djikstra => dijkstra(graph),
+        PathfindingAlgorithm::Dijkstra => dijkstra(graph),
     }
 }
 

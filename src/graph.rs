@@ -3,8 +3,6 @@ use std::collections::HashMap;
 use std::fmt;
 use std::path::Path;
 
-use rustc_hash::FxHashMap;
-
 #[derive(Clone, PartialEq, Eq, Hash)]
 pub struct Coord {
     x: u32,
@@ -83,7 +81,20 @@ impl Graph<Coord> {
         let path = path.as_ref();
         let img = ImageReader::open(path)?.decode()?.into_rgb8();
         let mut vertices = create_vertices(&img);
-        populate_vertex_neighbors(&mut vertices);
+
+        let width = img.width();
+        let height = img.height();
+
+        let mut grid_lookup = vec![None; (width * height) as usize];
+        for (i, v) in vertices.iter().enumerate() {
+            let idx = (v.pos.y * width + v.pos.x) as usize;
+            grid_lookup[idx] = Some(i);
+        }
+
+        populate_vertex_neighbors(&mut vertices, |pos| {
+            let idx = (pos.y * width + pos.x) as usize;
+            grid_lookup.get(idx).copied().flatten()
+        });
         reduce_vertex_count(&mut vertices);
 
         let boundary_vertices = find_boundary_vertices(&vertices, img.width(), img.height());
@@ -205,23 +216,15 @@ fn create_vertices(img: &RgbImage) -> Vec<Vertex<Coord>> {
         .collect()
 }
 
-fn populate_vertex_neighbors<T>(vertices: &mut Vec<Vertex<T>>)
+fn populate_vertex_neighbors<T, F>(vertices: &mut Vec<Vertex<T>>, lookup: F)
 where
-    T: Adjacent + Clone + Eq + std::hash::Hash,
+    T: Adjacent + Clone,
+    F: Fn(&T) -> Option<usize>,
 {
-    let weight = 1.0; // TODO: Do not hardcode this here
-
-    // FxHashMap is much faster for small keys like coordinates
-    let pos_to_idx: FxHashMap<T, usize> = vertices
-        .iter()
-        .enumerate()
-        .map(|(i, v)| (v.pos.clone(), i))
-        .collect();
-
     for vertex in vertices.iter_mut() {
         for potential_neighbor in vertex.pos.potential_neighbors() {
-            if let Some(&neighbor_idx) = pos_to_idx.get(&potential_neighbor) {
-                vertex.neighbors.push((neighbor_idx, weight));
+            if let Some(neighbor_idx) = lookup(&potential_neighbor) {
+                vertex.neighbors.push((neighbor_idx, 1.0));
             }
         }
     }

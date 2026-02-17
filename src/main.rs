@@ -25,7 +25,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let solvers = &[
         PathfindingAlgorithm::BreadthFirst,
         PathfindingAlgorithm::DepthFirst,
-        PathfindingAlgorithm::Djikstra,
+        PathfindingAlgorithm::Dijkstra,
     ];
 
     for solver in solvers {
@@ -37,7 +37,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             pathfinding::calculate_cost(&g, &result)
         );
 
-        if let PathfindingAlgorithm::Djikstra = solver {
+        if let PathfindingAlgorithm::Dijkstra = solver {
             g.draw_path(&result, filename)?;
         }
     }
