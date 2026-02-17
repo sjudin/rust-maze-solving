@@ -1,0 +1,8 @@
+[package]
+name = "maze-solving"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+image = { version = "0.25.9", default-features = false, features = ["default-formats"]}
+rustc-hash = "2.1"
